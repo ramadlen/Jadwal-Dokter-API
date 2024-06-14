@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+//apk ini hanya dibuka oleh dokter
+
+
+//1 user bisa dimiliki banyak kontak, 1 kontak memiliki 1 user
+model User { //sama dengan nama authorization
+  username String @id @db.VarChar(100)
+  password String  @db.VarChar(100)
+  name String @db.VarChar(100)
+  token    String? @db.VarChar(100)
+  dokter Dokter_Name [] //alat hubung antara user dan Contact
+
+  @@map("users") //nama tabel user
+}
+
+
+//contact/Dokter_name itu milik user maka kita perlu buat relasi dengan tabel user
+model Dokter_Name { //sebagaicontact
+ id Int @id @default(autoincrement())
+ dokter_name String @db.VarChar(100)
+ phone String? @db.VarChar(100)
+ email String? @db.VarChar(100)
+
+ //pemilik kontak
+ username String @db.VarChar(100)
+ //owner     dan username yang difields adalah username yang di tabel Dokter_Name, sedangkan yang direference adalah username dari User
+ user User @relation(fields: [username], references: [username])
+ jadwal Jadwal[]
+
+ @@map("Dokter")
+}
+
+
+
+model Jadwal { //address
+  id              Int     @id @default(autoincrement())
+  day             DateTime @db.Date
+  date            DateTime @db.Timestamp()
+  daterange       DateTime? @db.Timestamp()
+  time_start      DateTime @db.Time(4)
+  time_finish     DateTime @db.Time(4)
+  quota           Int  @db.Int 
+  status          Boolean @default(false)
+  dokter          Dokter_Name @relation(fields: [dokter_id], references: [id]) ///nantinya ini dihapus, kemudian doktername disini meminjam tabel dokter yang dibawah
+  dokter_id       Int
+  //contact = dokter //address = jawal
+  @@map("jadwal") //nama tabel
+}
+
+
